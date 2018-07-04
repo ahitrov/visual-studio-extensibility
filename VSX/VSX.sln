@@ -1,0 +1,18 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Macros", "Macros", "{0F6599F9-EF35-42BA-8B51-E261CDB40014}"
+	ProjectSection(SolutionItems) = preProject
+		codingGuideLines.js = codingGuideLines.js
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8D69B86E-3CD0-4C77-9A2F-3879B224087E}
+	EndGlobalSection
+EndGlobal
