@@ -39,7 +39,7 @@ namespace VSIXExample.Adornments
                 if (match.Success)
                 {
                     var underscoreGroup = match.Groups[RegexConstants.GroupNames.Underscore];
-                    var matchSpan = new SnapshotSpan(line.Start + underscoreGroup.Index - 1, underscoreGroup.Length + 2);
+                    var matchSpan = new SnapshotSpan(line.Start + underscoreGroup.Index - 1, underscoreGroup.Length + 1);
 
                     yield return new TagSpan<UnderscoreSquiggleTag>(matchSpan, new UnderscoreSquiggleTag());
                 }

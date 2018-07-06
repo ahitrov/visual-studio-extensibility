@@ -26,15 +26,19 @@ var vsFindAction = {
     vsFindActionReplaceAll: 4
 };
 
-dte.Find.Action = vsFindAction.vsFindActionReplaceAll;
-dte.Find.PatternSyntax = vsFindPatternSyntax.vsFindPatternSyntaxRegExpr;
-dte.Find.MatchCase = false;
-dte.Find.MatchInHiddenText = false;
-dte.Find.MatchWholeWord = false;
-dte.Find.Target = vsFindTarget.vsFindTargetCurrentProject;
+removeLeadingUnderscore();
 
-// Remove the leading underscore in the names of all private fields
-dte.Find.FindWhat = "(?<modifierAndType>\\s*private\\s*\\w*\\s*)(?<underscore>_)(?<nameWithoutUnderscore>\\w*)(?<endOfDeclaration>.*;)";
-dte.Find.ReplaceWith = "${modifierAndType}${nameWithoutUnderscore}${endOfDeclaration}";
+function removeLeadingUnderscore() {
+    dte.Find.Action = vsFindAction.vsFindActionReplaceAll;
+    dte.Find.PatternSyntax = vsFindPatternSyntax.vsFindPatternSyntaxRegExpr;
+    dte.Find.MatchCase = false;
+    dte.Find.MatchInHiddenText = false;
+    dte.Find.MatchWholeWord = false;
+    dte.Find.Target = vsFindTarget.vsFindTargetOpenDocuments;
 
-dte.Find.Execute();
+    // Remove the leading underscore in the names of all private fields
+    dte.Find.FindWhat = "(?<modifierAndType>\\s*private\\s*\\w*\\s*)(?<underscore>_)(?<nameWithoutUnderscore>\\w*)(?<endOfDeclaration>.*;)";
+    dte.Find.ReplaceWith = "${modifierAndType}${nameWithoutUnderscore}${endOfDeclaration}";
+
+    dte.Find.Execute();
+}

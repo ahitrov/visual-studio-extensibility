@@ -91,24 +91,13 @@ namespace VSIXExample
             Task.Run(async () => {
                 await this.package.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var dte = await this.package.GetServiceAsync(typeof(SDTE)) as DTE2;
-
-                //dte.Find.Action = vsFindAction.vsFindActionReplaceAll;
-                //dte.Find.PatternSyntax = vsFindPatternSyntax.vsFindPatternSyntaxRegExpr;
-                //dte.Find.MatchCase = false;
-                //dte.Find.MatchInHiddenText = false;
-                //dte.Find.MatchWholeWord = false;
-                //dte.Find.Target = vsFindTarget.vsFindTargetCurrentProject;
-
-                //// Remove the leading underscore in the names of all private fields 
-                //dte.Find.FindWhat = RegexConstants.MatchLeadingUnderscoreInPrivateFieldDeclarations;
-                //dte.Find.ReplaceWith = RegexConstants.RemoveLeadingUnderscoreReplacePattern;
+                var dte = await this.ServiceProvider.GetServiceAsync(typeof(SDTE)) as DTE;
 
                 dte.Find.FindReplace(Action: vsFindAction.vsFindActionReplaceAll,
                                      FindWhat: RegexConstants.MatchLeadingUnderscoreInPrivateFieldDeclarations,
                                      vsFindOptionsValue: (int)vsFindOptions.vsFindOptionsRegularExpression,
                                      ReplaceWith: RegexConstants.RemoveLeadingUnderscoreReplacePattern,
-                                     Target: vsFindTarget.vsFindTargetCurrentProject);
+                                     Target: vsFindTarget.vsFindTargetOpenDocuments);
             });
         }
     }
