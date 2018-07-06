@@ -1,8 +1,6 @@
-﻿using EnvDTE;
-using EnvDTE80;
+﻿using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Threading;
+using Microsoft.VisualStudio.TextManager.Interop;
 using System;
 using System.ComponentModel.Design;
 using Task = System.Threading.Tasks.Task;
@@ -12,12 +10,12 @@ namespace VSIXExample
     /// <summary>
     /// Command handler
     /// </summary>
-    internal sealed class RemoveUnderscoreCommand
+    internal sealed class RemoveUnderscoreWithIVsCommand
     {
         /// <summary>
         /// Command ID.
         /// </summary>
-        public const int CommandId = 0x0100;
+        public const int CommandId = 4129;
 
         /// <summary>
         /// Command menu group (command set GUID).
@@ -30,12 +28,12 @@ namespace VSIXExample
         private readonly AsyncPackage package;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RemoveUnderscoreCommand"/> class.
+        /// Initializes a new instance of the <see cref="RemoveUnderscoreWithIVsCommand"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
         /// <param name="commandService">Command service to add command to, not null.</param>
-        private RemoveUnderscoreCommand(AsyncPackage package, OleMenuCommandService commandService)
+        private RemoveUnderscoreWithIVsCommand(AsyncPackage package, OleMenuCommandService commandService)
         {
             this.package = package ?? throw new ArgumentNullException(nameof(package));
             commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
@@ -48,7 +46,7 @@ namespace VSIXExample
         /// <summary>
         /// Gets the instance of the command.
         /// </summary>
-        public static RemoveUnderscoreCommand Instance
+        public static RemoveUnderscoreWithIVsCommand Instance
         {
             get;
             private set;
@@ -71,12 +69,12 @@ namespace VSIXExample
         /// <param name="package">Owner package, not null.</param>
         public static async Task InitializeAsync(AsyncPackage package)
         {
-            // Verify the current thread is the UI thread - the call to AddCommand in RemoveUnderscoreCommand's constructor requires
+            // Verify the current thread is the UI thread - the call to AddCommand in RemoveUnderscoreWithIVsCommand's constructor requires
             // the UI thread.
             ThreadHelper.ThrowIfNotOnUIThread();
 
             OleMenuCommandService commandService = await package.GetServiceAsync((typeof(IMenuCommandService))) as OleMenuCommandService;
-            Instance = new RemoveUnderscoreCommand(package, commandService);
+            Instance = new RemoveUnderscoreWithIVsCommand(package, commandService);
         }
 
         /// <summary>
@@ -89,26 +87,26 @@ namespace VSIXExample
         private void Execute(object sender, EventArgs e)
         {
             Task.Run(async () => {
+                var findManager = await this.ServiceProvider.GetServiceAsync(typeof(SVsFindManager)) as IVsFindManager;
+
+                var finderIID = typeof(IVsFindHelper).GUID;
+                var finderCLSID = typeof(VsFinderClass).GUID;
+
                 await this.package.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var dte = await this.package.GetServiceAsync(typeof(SDTE)) as DTE2;
+                var findHelper = this.package.CreateInstance(ref finderCLSID, ref finderIID, typeof(IVsFindHelper)) as IVsFindHelper;
 
-                //dte.Find.Action = vsFindAction.vsFindActionReplaceAll;
-                //dte.Find.PatternSyntax = vsFindPatternSyntax.vsFindPatternSyntaxRegExpr;
-                //dte.Find.MatchCase = false;
-                //dte.Find.MatchInHiddenText = false;
-                //dte.Find.MatchWholeWord = false;
-                //dte.Find.Target = vsFindTarget.vsFindTargetCurrentProject;
+                if (findManager.CurrentTarget(out IVsFindTarget findTarget) != VSConstants.S_OK)
+                {
+                    return;
+                }
 
-                //// Remove the leading underscore in the names of all private fields 
-                //dte.Find.FindWhat = RegexConstants.MatchLeadingUnderscoreInPrivateFieldDeclarations;
-                //dte.Find.ReplaceWith = RegexConstants.RemoveLeadingUnderscoreReplacePattern;
-
-                dte.Find.FindReplace(Action: vsFindAction.vsFindActionReplaceAll,
-                                     FindWhat: RegexConstants.MatchLeadingUnderscoreInPrivateFieldDeclarations,
-                                     vsFindOptionsValue: (int)vsFindOptions.vsFindOptionsRegularExpression,
-                                     ReplaceWith: RegexConstants.RemoveLeadingUnderscoreReplacePattern,
-                                     Target: vsFindTarget.vsFindTargetCurrentProject);
+                findTarget.Replace(RegexConstants.MatchLeadingUnderscoreInPrivateFieldDeclarations,
+                                   RegexConstants.RemoveLeadingUnderscoreReplacePattern,
+                                   (uint)(__VSFINDOPTIONS.FR_RegExpr | __VSFINDOPTIONS.FR_ReplaceAll),
+                                   1,
+                                   findHelper,
+                                   out int replaced);
             });
         }
     }
